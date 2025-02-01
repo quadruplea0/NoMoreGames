@@ -59,8 +59,17 @@ class $modify(MyMenuLayer, MenuLayer) {
 		 * Node IDs are a Geode feature, see this page for more info about it:
 		 * https://docs.geode-sdk.org/tutorials/nodetree
 		*/
-		auto menu = this->getChildByID("bottom-menu");
-		menu->removeChildByID("more-games-button");
+		auto menu = this->getChildByID("more-games-menu");
+		menu->setVisible(false);
+
+     auto value = Mod::get()->getSettingValue<bool>("chest-replace");
+        
+		if(value == true){
+
+		
+		auto movechest = this->getChildByID("right-side-menu");
+		movechest->setPosition(515, 45);
+		};
 
 		/**
 		 * The `_spr` string literal operator just prefixes the string with
