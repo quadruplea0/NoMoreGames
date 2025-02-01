@@ -1,100 +1,55 @@
-name: Combine Geode mods
-description: Combines the same Geode mod built for different platforms into a single file
+name: Build Geode Mod
 
-inputs:
-  cli:
-    description: Which CLI version to use, defaults to latest release.
-    required: false
-    default: latest
-  delete-artifacts:
-    description: Whether to delete temporary artifacts left by the build action.
-    required: false
-    default: true
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - "**"
 
-outputs:
-  build-output:
-    description: A folder containing the built .geode file(s)
-    value: ${{ steps.merge.outputs.output }}
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        config:
+        - name: Windows
+          os: windows-latest
 
-runs:
-  using: composite
-  steps:
-    - name: Download CLI
-      uses: robinraju/release-downloader@v1.10
-      with:
-        repository: geode-sdk/cli
-        latest: ${{ inputs.cli == 'latest' }}
-        tag: ${{ inputs.cli != 'latest' && inputs.cli || '' }}
-        tarBall: false
-        zipBall: false
-        fileName: "*-linux.zip"
-        extract: true
-        out-file-path: ${{ github.action_path }}
+        - name: macOS
+          os: macos-latest
 
-    - run: echo "${{ github.action_path }}" >> $GITHUB_PATH
-      shell: bash
+        - name: Android32
+          os: ubuntu-latest
+          target: Android32
 
-    - uses: actions/download-artifact@v4
-      with:
-        path: "${{ github.action_path }}/artifacts"
-    
-    - name: Combine them
-      shell: bash
-      id: merge
-      run: |
-        cd "${{ github.action_path }}"
-        chmod +x ./geode
-        mkdir out
-        MODS=$(find . -name *.geode -type f -printf "%f\n" | sort -u)
-        for mod in $MODS; do
-          echo "Merging $mod"
-          PACKAGE_ARGS=""
-          if [ -f "./artifacts/geode-build-win/$mod" ]; then
-            PACKAGE_ARGS="$PACKAGE_ARGS ./artifacts/geode-build-win/$mod"
-          fi
-          if [ -f "./artifacts/geode-build-mac/$mod" ]; then
-            PACKAGE_ARGS="$PACKAGE_ARGS ./artifacts/geode-build-mac/$mod"
-          fi
-          if [ -f "./artifacts/geode-build-android32/$mod" ]; then
-            PACKAGE_ARGS="$PACKAGE_ARGS ./artifacts/geode-build-android32/$mod"
-          fi
-          if [ -f "./artifacts/geode-build-android64/$mod" ]; then
-            PACKAGE_ARGS="$PACKAGE_ARGS ./artifacts/geode-build-android64/$mod"
-          fi
-          ARG_LIST=($PACKAGE_ARGS)
-          # why does it merge into the first one instead of just an output..
-          FIRST="${ARG_LIST[0]}"
-          if [ ${#ARG_LIST[@]} != 1 ]; then
-            geode package merge $PACKAGE_ARGS
-          fi
-          cp $FIRST out
-        done
-        # Copy the .pdb file from windows artifact if it exists
-        if [ -f "./artifacts/geode-build-win/$(basename $FIRST .geode).pdb" ]; then
-          cp "./artifacts/geode-build-win/$(basename $FIRST .geode).pdb" out
-        fi
-        echo "output=$(realpath out)" >> $GITHUB_OUTPUT
+        - name: Android64
+          os: ubuntu-latest
+          target: Android64
 
-    - uses: geekyeggo/delete-artifact@v5
-      if: ${{ inputs.delete-artifacts }}
-      with:
-          name: geode-build-win
-          failOnError: false
-        
-    - uses: geekyeggo/delete-artifact@v5
-      if: ${{ inputs.delete-artifacts }}
-      with:
-          name: geode-build-mac
-          failOnError: false
+    name: ${{ matrix.config.name }}
+    runs-on: ${{ matrix.config.os }}
 
-    - uses: geekyeggo/delete-artifact@v5
-      if: ${{ inputs.delete-artifacts }}
-      with:
-          name: geode-build-android32
-          failOnError: false
+    steps:
+      - uses: actions/checkout@v4
 
-    - uses: geekyeggo/delete-artifact@v5
-      if: ${{ inputs.delete-artifacts }}
-      with:
-          name: geode-build-android64
-          failOnError: false
+      - name: Build the mod
+        uses: geode-sdk/build-geode-mod@main
+        with:
+          bindings: geode-sdk/bindings
+          bindings-ref: main
+          combine: true
+          target: ${{ matrix.config.target }}
+
+  package:
+    name: Package builds
+    runs-on: ubuntu-latest
+    needs: ['build']
+
+    steps:
+      - uses: geode-sdk/build-geode-mod/combine@main
+        id: build
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Build Output
+          path: ${{ steps.build.outputs.build-output }}
