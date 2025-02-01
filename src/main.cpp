@@ -60,7 +60,7 @@ class $modify(MyMenuLayer, MenuLayer) {
 		 * https://docs.geode-sdk.org/tutorials/nodetree
 		*/
 		auto menu = this->getChildByID("bottom-menu");
-		menu->removeChildById("more-games-button");
+		menu->removeChildByID("more-games-button");
 
 		/**
 		 * The `_spr` string literal operator just prefixes the string with
