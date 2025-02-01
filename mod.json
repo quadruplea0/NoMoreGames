@@ -25,7 +25,7 @@
 	
 	"id": "quadruplea.nomoregames",
 	"name": "NoMoreGames",
-	"version": "v0.0.1",
+	"version": "v0.0.2",
 	"developer": "quadruplea",
 	"description": "Removes the More Games button from the main menu because it is useless"
 }
