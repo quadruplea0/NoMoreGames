@@ -1,3 +1,3 @@
-# Template Mod
+# NoMoreGames
 
-Edit about.md to change this
+A simple mod to remove the "More Games" button from the main menu, can also optionally replace it with the Daily Chest.
