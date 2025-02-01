@@ -6,6 +6,23 @@
 		"mac": "2.2074",
 		"ios": "2.2074"
 	},
+	"dependencies": [
+		{
+			"id": "geode.node-ids",
+			"version": ">=v1.16.0",
+			"importance": "required"
+		}
+	],
+	"settings": {
+		"chest-replace": {
+			"type": "bool",
+			"name": "Replace with Chest",
+            "description": "Replace the More Games button with the Daily Chest!",
+			"default": false
+		}
+	},
+
+	
 	"id": "quadruplea.nomoregames",
 	"name": "NoMoreGames",
 	"version": "v0.0.1",
