@@ -10,5 +10,5 @@
 	"name": "NoMoreGames",
 	"version": "v0.0.1",
 	"developer": "quadruplea",
-	"description": "Removes the "More Games" button from the main menu because it is useless"
+	"description": "Removes the More Games button from the main menu because it is useless"
 }
